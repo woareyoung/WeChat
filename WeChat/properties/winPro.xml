@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <appWindowWidth>700</appWindowWidth>
+  <appWindowHeight>500</appWindowHeight>
+  <baseSpan>5</baseSpan>
+  <defaultBackgroundColor>gray</defaultBackgroundColor>
+  <contactListWidth>150</contactListWidth>
+  <scrollbarWidth>15</scrollbarWidth>
+  <chatNumber>10</chatNumber>
+  <chatBarHeight>30</chatBarHeight>
+  <chatInterface>
+    <titleHeight>35</titleHeight>
+    <inputHeight>50</inputHeight>
+    <sendWidth>50</sendWidth>
+  </chatInterface>
+</root>
