@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from MessageHandler.ChatMessageHandler import *
 from Assist.Saver import *
 
+
 # 朋友列表界面
 class FriendsControllInterface(QWidget, Ui_FriendsControllInterface):
 
@@ -27,18 +28,22 @@ class FriendsControllInterface(QWidget, Ui_FriendsControllInterface):
         self.__Friend_Bar = {}
         self.__Bar_Friend = {}
 
-        self.__read_all_friend_with_record()
-
     # 读取全部有聊天记录的朋友
-    def __read_all_friend_with_record(self):
-        import os
-        all_file = os.listdir(GlobalVariable.FriendDataDirectory)
-        for f in all_file:
-            temp_f = os.path.join(GlobalVariable.FriendDataDirectory, f)
-            if os.path.isfile(temp_f):
-                temp_id = f[:-4]
-                record = get_record_list(temp_id)
-                self.__add_friend_msg_widget(temp_id, get_remarkname_by_id(temp_id), record[len(record) - 1].Content)
+    @pyqtSlot()
+    def read_all_friend_with_record(self):
+        print("将联系人加载到界面")
+        mem_file = QSettings(GlobalVariable.PersonalMsgFile, QSettings.IniFormat)
+        all_friend = mem_file.childGroups()
+        for key in all_friend:
+            mem_file.beginGroup(key)
+            record = get_record_list(key)
+            if record is None:
+                mem_file.endGroup()
+                continue
+            self.__add_friend_msg_widget(key, mem_file.value("RemarkName"), record[len(record) - 1].Content)
+            mem_file.endGroup()
+        del mem_file
+        print("加载完成")
 
     """
     添加朋友消息控件
@@ -67,20 +72,34 @@ class FriendsControllInterface(QWidget, Ui_FriendsControllInterface):
         sender = msg_handler.get_sender()
         now_time = get_now_time()
         save_msg(msg_handler, now_time)
+        print("接收到来自 " + friend_remark_name + " 的消息")
         try:
-            new_bar = self.__Friend_Bar[friend_id]
-            new_bar.set_closest_msg(msg_content)  # 将新消息设置到消息控件里面
-            msg_id = msg_handler.get_msg_id()
-            # 如果当前正在与该朋友聊天
-            if GlobalVariable.CurrentFriendId == friend_id:
-                if sender == friend_id:
-                    self.new_msg_signal.emit(msg_id, msg_content, friend_remark_name, now_time, 1)  # 将新的消息插入到聊天界面
-                else:
-                    self.new_msg_signal.emit(msg_id, msg_content, "我", now_time, 0)  # 将新的消息插入到聊天界面
-            self.FriendListLayout.removeWidget(new_bar)
-            self.FriendListLayout.insertWidget(0, new_bar)
-        except Exception as e:
+            self.set_closest_msg(friend_id, msg_handler.get_msg_id(), sender, msg_content, friend_remark_name, now_time)
+        except:
             self.__add_friend_msg_widget(friend_id, friend_remark_name, msg_content)
+
+    """
+    设置最近一条消息记录
+    param[friend_id]:朋友的id号
+    param[msg_id]:消息id
+    param[sender]:发送者的id号
+    param[msg_content]:消息内容
+    param[friend_remark_name]:发送者的备注名称
+    param[send_time]:发送时间
+    """
+    @pyqtSlot(str, str, str, str, str, str)
+    def set_closest_msg(self, friend_id, msg_id, sender, msg_content, friend_remark_name, now_time):
+        new_bar = self.__Friend_Bar[friend_id]
+        new_bar.set_closest_msg(msg_content)  # 将新消息设置到消息控件里面
+        # 如果当前正在与该朋友聊天
+        if GlobalVariable.CurrentFriendId == friend_id:
+            # 如果对方是发送者
+            if sender == friend_id:
+                self.new_msg_signal.emit(msg_id, msg_content, friend_remark_name, now_time, 0)  # 将新的消息插入到聊天界面
+            else:
+                self.new_msg_signal.emit(msg_id, msg_content, "我", now_time, 1)  # 将新的消息插入到聊天界面
+        self.FriendListLayout.removeWidget(new_bar)
+        self.FriendListLayout.insertWidget(0, new_bar)
 
     """
     选择朋友事件

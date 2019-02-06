@@ -12,16 +12,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("微信")
         self.ChatRecordInterface = ChatRecordInterface(self)
-        self.__FriendControllInterface = FriendsControllInterface(self)
+        self.FriendControllInterface = FriendsControllInterface(self)
         self.RightLayout.addWidget(self.ChatRecordInterface)
-        self.LeftLayout.addWidget(self.__FriendControllInterface)
+        self.LeftLayout.addWidget(self.FriendControllInterface)
 
-        self.__FriendControllInterface.new_msg_signal.connect(self.ChatRecordInterface.add_msg)
-        self.__FriendControllInterface.click_friend_signal.connect(self.ChatRecordInterface.set_current_friend)
+        self.FriendControllInterface.new_msg_signal.connect(self.ChatRecordInterface.add_msg)
+        self.FriendControllInterface.click_friend_signal.connect(self.ChatRecordInterface.set_current_friend)
 
     @pyqtSlot(dict)
     def receive_text(self, msg):
-        self.__FriendControllInterface.set_friend(msg)
+        self.FriendControllInterface.set_friend(msg)
 
     def closeEvent(self, event):
         self.exit_proc_signal.emit()

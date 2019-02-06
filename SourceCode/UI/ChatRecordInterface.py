@@ -5,6 +5,7 @@ from UI.ChatMessageBar import *
 from Assist.GlobalVariable import *
 from PyQt5 import sip
 
+
 # 聊天界面
 class ChatRecordInterface(QWidget, Ui_ChatRecordInterface):
 
@@ -26,6 +27,7 @@ class ChatRecordInterface(QWidget, Ui_ChatRecordInterface):
     # 读取聊天纪录到界面
     def __read_chat_record(self, friend_id):
         friend_remark_name = get_remarkname_by_id(friend_id)
+        print("开始加载 " + friend_remark_name + " 的聊天记录到界面")
         record = get_record_list(friend_id)
         i = len(record) - 1
         count = 5  # 显示最近5条消息
@@ -37,7 +39,11 @@ class ChatRecordInterface(QWidget, Ui_ChatRecordInterface):
             count -= 1
         final_msg.reverse()
         for r in final_msg:
-            self.add_msg(r.MsgId, r.Content, friend_remark_name, r.Time, r.Sender)
+            if r.Sender == get_local_id():
+                self.add_msg(r.MsgId, r.Content, "我", r.Time, 1)
+            else:
+                self.add_msg(r.MsgId, r.Content, friend_remark_name, r.Time, 0)
+        print("读取完成")
 
     # 清空聊天界面
     def __clear_msg(self):
@@ -55,13 +61,16 @@ class ChatRecordInterface(QWidget, Ui_ChatRecordInterface):
     def set_current_friend(self, friend_id):
         if self.InputField.isHidden():
             self.InputField.show()
-        self.FriendNameLabel.setText(get_remarkname_by_id(friend_id))
+        remark_name = get_remarkname_by_id(friend_id)
+        print("当前聊天对象是 " + remark_name)
+        self.FriendNameLabel.setText(remark_name)
         self.__clear_msg()
         self.__read_chat_record(friend_id)
 
     """发送按钮事件"""
     @pyqtSlot()
     def __send_message(self):
+        print("开始发送当前消息")
         content = self.InputField.toPlainText().strip()
         self.InputField.setText("")
         self.InputField.setFocus()
@@ -77,6 +86,7 @@ class ChatRecordInterface(QWidget, Ui_ChatRecordInterface):
     """
     @pyqtSlot(str, str, str, str, int)
     def add_msg(self, msg_id, content, sender_remark, send_time, is_me):
+        print("添加新的聊天消息到界面")
         msg_bar = ChatMessageBar(self)
         msg_bar.set_time(send_time)
         msg_bar.set_content(content)
