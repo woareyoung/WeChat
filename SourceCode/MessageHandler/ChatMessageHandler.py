@@ -1,5 +1,8 @@
+from Assist.GlobalVariable import *
 
-class ChatMessageHandler:
+
+# 私聊消息处理器
+class PrivateMessageHandler:
 
     def __init__(self, msg):
         self.__msg_content = msg
@@ -65,17 +68,50 @@ class ChatMessageHandler:
     def get_msg_id(self):
         return str(self.__msg_content["MsgId"])
 
-    # 获取本机id号
-    def get_local_id(self):
-        friend_id = self.get_current_user()
-        sender = self.get_sender()
-        if friend_id == sender:
-            return self.get_receiver()
-        else:
-            return sender
-
-    # 判断本机是否是发送者
+    # 判断本机是否是发送者，否——1，是——0
     def local_is_sender(self):
-        if self.get_local_id() == self.get_sender():
+        if self.get_sender() != get_local_id() and self.get_sender() != "filehelper":
+            return 1
+        return 0
+
+
+# 群聊消息处理器
+class GroupMessageHandler:
+
+    def __init__(self, msg):
+        self.__msg_content = msg
+        self.__Type = "text"
+
+    # 获取消息内容
+    def get_content(self):
+        return str(self.__msg_content["Content"])
+
+    # 获取消息id号
+    def get_msg_id(self):
+        return str(self.__msg_content["MsgId"])
+
+    # 获取发送者
+    def get_sender(self):
+        return str(self.__msg_content["FromUserName"])
+
+    # 获取发送者的备注名称
+    def get_sender_remark_name(self):
+        return str(self.__msg_content["ActualNickName"])
+
+    # 获取群聊名称
+    def get_group_name(self):
+        return str(self.__msg_content["User"]["NickName"])
+
+    # 获取@对象的备注名称
+    def get_at_remark_name(self):
+        pass
+
+    # 获取@对象的群名称
+    def get_at_group_name(self):
+        pass
+
+    # 判断本机是否是发送者，否——1，是——0
+    def local_is_sender(self):
+        if self.get_sender() != get_local_id():
             return 1
         return 0
